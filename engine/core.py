@@ -1,5 +1,3 @@
-from hems.const import OFFSET_ECO
-
 class Context:
     mode: str
     inverters:[]
@@ -12,7 +10,7 @@ class Context:
     solar_total_managed: float
     battery_ok: int
 
-    def __init__(self, mode, power_consumption_total, power_consumption_car, inverters: []):
+    def __init__(self, mode, power_consumption_total, power_consumption_car, inverters):
         self.mode = mode
         self.inverters = inverters
         self.power_consumption_total = power_consumption_total
