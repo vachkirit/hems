@@ -1,0 +1,6 @@
+{
+  "name": "HEMS",
+  "content_in_root": false,
+  "domain": "hems",
+  "homeassistant": "2024.6.0"
+}
