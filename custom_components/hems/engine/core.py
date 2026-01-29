@@ -87,13 +87,16 @@ class Engine:
             f"{self.context}"
         )
 
-
-
     def update(self):
         self.context.update_context()
         for inverter in self.context.inverters:
             inverter.update_consigne(self.context)
-        print(self.__repr__())
+
+    def get_consigne(self):
+        return {
+            inverter.name: inverter.consigne
+            for inverter in self.context.inverters
+        }
 
 
 

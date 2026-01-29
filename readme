@@ -1,1 +1,21 @@
 HEMS System for Home assistant
+
+custom_components/hems/
+├── __init__.py
+├── manifest.json
+├── const.py
+├── config_flow.py        # UI de configuration
+├── coordinator.py        # pont HA ↔ moteur
+├── sensor.py             # consignes
+├── number.py             # (optionnel) seuils
+├── switch.py             # (optionnel) modes
+│
+├── engine/               # 🔥 TON moteur pur
+│   ├── __init__.py
+│   ├── engine.py
+│   ├── context.py
+│   ├── inverter.py
+│   └── const.py
+│
+└── translations/
+    └── fr.json
