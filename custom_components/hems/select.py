@@ -1,4 +1,5 @@
 from homeassistant.components.select import SelectEntity
+from homeassistant.helpers.restore_state import RestoreEntity
 
 from .engine.const import MODE_NORMAL, MODE_ECO, MODE_RECHARGE
 from . import DOMAIN
@@ -15,7 +16,7 @@ async def async_setup_entry(hass, entry, async_add_entities):
     ])
 
 
-class HEMSModeSelect(SelectEntity):
+class HEMSModeSelect(SelectEntity, RestoreEntity):
     _attr_name = "HEMS Mode"
     _attr_icon = "mdi:transmission-tower"
     _attr_should_poll = False
@@ -38,3 +39,10 @@ class HEMSModeSelect(SelectEntity):
         self.engine.context.mode = option
         self.engine.update()
         self.coordinator._notify_sensors()
+
+    async def async_added_to_hass(self):
+        """Restore last selected mode."""
+        last_state = await self.async_get_last_state()
+        if last_state and last_state.state in self._attr_options:
+            self.engine.context.mode = last_state.state
+
