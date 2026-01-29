@@ -29,3 +29,22 @@ All configuration is done through the Home Assistant UI.
 ## License
 
 MIT
+
+## Information
+
+### Setpoint Modes
+
+#### RECHARGE
+All solar production is redirected to the battery.
+
+#### ECO
+The setpoint is calculated to prioritize the use of solar energy to cover the energy needs of the house and the electric vehicle.
+In this mode, the battery is not used to supply the house.
+Any excess solar production is stored in the battery.
+
+#### NORMAL
+The setpoint prioritizes the use of solar energy from all inverters to meet the energy needs of the house and the electric vehicle.
+The battery is used to compensate for any solar production deficit and the house consumption.
+The battery is not used to compensate for electric vehicle charging.
+Any excess solar production is stored in the battery.
+
