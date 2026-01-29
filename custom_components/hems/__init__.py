@@ -13,7 +13,7 @@ async def async_setup_entry(hass, entry):
     _LOGGER.info("HEMS | setup entry %s", entry.entry_id)
 
     engine = Engine(
-        mode="Normal",
+        mode=None,
         power_consumption_total=0,
         power_consumption_car=0,
         inverters=[],
