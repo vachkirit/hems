@@ -1,9 +1,10 @@
 {
   "domain": "hems",
-  "name": "HEMS – Home Energy Management System",
+  "name": "HEMS",
   "version": "0.1.0",
-  "documentation": "https://github.com/vachkirit/hems",
+  "config_flow": true,
+  "documentation": "https://github.com/ton_repo/hems",
   "requirements": [],
-  "codeowners": ["@vachkirit"],
+  "codeowners": ["@toi"],
   "iot_class": "local_push"
 }

@@ -5,7 +5,6 @@ from homeassistant.const import EVENT_STATE_CHANGED
 
 _LOGGER = logging.getLogger(__name__)
 
-
 class HEMSCoordinator:
     """
     Adaptateur Home Assistant → moteur HEMS

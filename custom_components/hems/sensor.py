@@ -5,30 +5,15 @@ from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from . import DOMAIN
 
 
-async def async_setup_platform(
-        hass: HomeAssistant,
-        config,
-        async_add_entities: AddEntitiesCallback,
-        discovery_info=None,
-):
-    data = hass.data.get(DOMAIN)
-    if not data:
-        return
-
-    engine = data.get("engine")
-    coordinator = data.get("coordinator")
-
-    # Défensif : on ne suppose rien
-    if not engine or not coordinator:
-        return
+async def async_setup_entry(hass, entry, async_add_entities):
+    data = hass.data[DOMAIN][entry.entry_id]
+    engine = data["engine"]
+    coordinator = data["coordinator"]
 
     sensors = [
         HEMSConsigneSensor(inv)
         for inv in engine.context.inverters
     ]
-
-    if not sensors:
-        return
 
     async_add_entities(sensors)
     coordinator.register_sensors(sensors)

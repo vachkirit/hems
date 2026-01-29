@@ -1,3 +1,6 @@
+import logging
+_LOGGER = logging.getLogger(__name__)
+
 class Context:
     mode: str
     inverters:[]
@@ -87,26 +90,28 @@ class Engine:
             f"{self.context}"
         )
 
+
+
     def update(self):
+
+        _LOGGER.info(
+            "ENGINE | BEFORE | mode=%r | conso_total=%.1f | solar_total=%.1f",
+            self.context.mode,
+            self.context.power_consumption_total,
+            self.context.solar_total,
+        )
+
         self.context.update_context()
+
         for inverter in self.context.inverters:
             inverter.update_consigne(self.context)
 
-    def get_consigne(self):
-        return {
-            inverter.name: inverter.consigne
-            for inverter in self.context.inverters
-        }
 
+        _LOGGER.info(
+            "ENGINE | AFTER  | mode=%r | solar_managed=%.1f | batteries_ok=%d",
+            self.context.mode,
+            self.context.solar_total_managed,
+            self.context.battery_ok,
+        )
 
-
-
-
-
-
-
-
-
-
-
-
+        print(self.__repr__())

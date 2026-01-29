@@ -9,8 +9,8 @@ _LOGGER = logging.getLogger(__name__)
 DOMAIN = "hems"
 
 
-async def async_setup(hass: HomeAssistant, config: dict) -> bool:
-    _LOGGER.info("HEMS | setup")
+async def async_setup_entry(hass, entry):
+    _LOGGER.info("HEMS | setup entry %s", entry.entry_id)
 
     engine = Engine(
         mode="Normal",
@@ -19,49 +19,60 @@ async def async_setup(hass: HomeAssistant, config: dict) -> bool:
         inverters=[],
     )
 
-    hyper = Inverter("hyper_2000", max_power=1200)
-    engine.context.inverters.append(hyper)
+    entity_mapping = {}
 
-    entity_mapping = {
-        # Mode
-        "input_select.hems_mode": lambda v: setattr(
-            engine.context, "mode", v.strip()
-        ),
+    # -----------------------------
+    # Capteurs globaux
+    # -----------------------------
+    house_power_sensor = entry.data["house_power_sensor"]
+    car_power_sensor = entry.data["car_power_sensor"]
 
-        # Consommations
-        "sensor.hems_maison_consommation": lambda v: setattr(
-            engine.context, "power_consumption_total", v
-        ),
-        "input_number.hems_voiture_consommation": lambda v: setattr(
-            engine.context, "power_consumption_car", v
-        ),
+    entity_mapping[house_power_sensor] = lambda v: setattr(
+        engine.context, "power_consumption_total", v
+    )
+    entity_mapping[car_power_sensor] = lambda v: setattr(
+        engine.context, "power_consumption_car", v
+    )
 
-        # Onduleur Hyper
-        "sensor.solaire_hyper2000_puissance_instantannee": lambda v: setattr(
-            hyper, "solar", v
-        ),
-        "sensor.hyper_2000_electric_level": lambda v: setattr(
-            hyper, "soc", v
-        ),
-        "number.hyper_2000_min_soc": lambda v: setattr(
-            hyper, "soc_min", v
-        ),
-        "number.hyper_2000_soc_set": lambda v: setattr(
-            hyper, "soc_max", v
-        ),
-    }
+    # -----------------------------
+    # Onduleurs dynamiques
+    # -----------------------------
+    for inv_cfg in entry.data["inverters"]:
+        inverter = Inverter(
+            name=inv_cfg["name"],
+            max_power=inv_cfg["max_power"],
+        )
 
+        engine.context.inverters.append(inverter)
 
+        # important : capturer inverter avec valeur par défaut
+        entity_mapping[inv_cfg["solar_sensor"]] = \
+            (lambda i: lambda v: setattr(i, "solar", v))(inverter)
+
+        entity_mapping[inv_cfg["soc_sensor"]] = \
+            (lambda i: lambda v: setattr(i, "soc", v))(inverter)
+
+        entity_mapping[inv_cfg["soc_min_sensor"]] = \
+            (lambda i: lambda v: setattr(i, "soc_min", v))(inverter)
+
+        entity_mapping[inv_cfg["soc_max_sensor"]] = \
+            (lambda i: lambda v: setattr(i, "soc_max", v))(inverter)
+
+    # -----------------------------
+    # Coordinator
+    # -----------------------------
     coordinator = HEMSCoordinator(hass, engine, entity_mapping)
 
-    # IMPORTANT : stocker AVANT async_start
-    hass.data[DOMAIN] = {
+    hass.data.setdefault(DOMAIN, {})[entry.entry_id] = {
         "engine": engine,
         "coordinator": coordinator,
-        "inverters": {"hyper_2000": hyper},
     }
 
     await coordinator.async_start()
+
+    hass.async_create_task(
+        hass.config_entries.async_forward_entry_setups(entry, ["sensor","select"])
+    )
 
     return True
 
