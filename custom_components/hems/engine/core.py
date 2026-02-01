@@ -74,6 +74,7 @@ class Engine:
 
     context:Context
 
+
     def __init__(self,mode, power_consumption_total, power_consumption_car, inverters):
 
 
@@ -90,7 +91,27 @@ class Engine:
         )
 
 
+
     def update(self):
+
+        _LOGGER.info(
+            "ENGINE | BEFORE | mode=%r | conso_total=%.1f | solar_total=%.1f",
+            self.context.mode,
+            self.context.power_consumption_total,
+            self.context.solar_total,
+        )
+
         self.context.update_context()
+
         for inverter in self.context.inverters:
             inverter.update_consigne(self.context)
+
+
+        _LOGGER.info(
+            "ENGINE | AFTER  | mode=%r | solar_managed=%.1f | batteries_ok=%d",
+            self.context.mode,
+            self.context.solar_total_managed,
+            self.context.battery_ok,
+        )
+
+        print(self.__repr__())

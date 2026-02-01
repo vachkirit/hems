@@ -8,7 +8,6 @@ from .coordinator import HEMSCoordinator
 _LOGGER = logging.getLogger(__name__)
 DOMAIN = "hems"
 
-
 async def async_setup_entry(hass, entry):
     _LOGGER.info("HEMS | setup entry %s", entry.entry_id)
 
@@ -37,10 +36,14 @@ async def async_setup_entry(hass, entry):
     # -----------------------------
     # Onduleurs dynamiques
     # -----------------------------
-    for inv_cfg in entry.data["inverters"]:
+    engine.context.inverters.clear()
+    inverters_cfg = entry.options.get("inverters",entry.data.get("inverters", [])
+                                      )
+    for inv_cfg in inverters_cfg:
         inverter = Inverter(
             name=inv_cfg["name"],
             max_power=inv_cfg["max_power"],
+            bidirectional_mode=inv_cfg.get("bidirectional_mode", False),
         )
 
         engine.context.inverters.append(inverter)
@@ -69,10 +72,25 @@ async def async_setup_entry(hass, entry):
     }
 
     await coordinator.async_start()
+    await hass.config_entries.async_forward_entry_setups(entry, ["sensor", "select"])
 
-    hass.async_create_task(
-        hass.config_entries.async_forward_entry_setups(entry, ["sensor","select"])
-    )
 
     return True
 
+async def async_unload_entry(hass, entry):
+    data = hass.data.get(DOMAIN, {}).pop(entry.entry_id, None)
+
+    if not data:
+        return True
+
+    coordinator = data.get("coordinator")
+
+    if coordinator:
+        await coordinator.async_stop()
+
+    # Décharger les plateformes (sensor, select, etc.)
+    unload_ok = await hass.config_entries.async_unload_platforms(
+        entry, ["sensor", "select"]
+    )
+
+    return unload_ok

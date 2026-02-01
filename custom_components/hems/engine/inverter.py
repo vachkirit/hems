@@ -8,20 +8,26 @@ class Inverter:
 
     name: str
     max_power: float
+    bidirectional_mode: bool
     solar: float
     soc: float
     soc_min: float
     soc_max: float
     consigne: float
+    consigne_ac: float
 
-    def __init__(self, name: str, max_power: float):
+
+    def __init__(self, name: str, max_power: float, bidirectional_mode: bool):
         self.name = name
         self.max_power = max_power
+        self.bidirectional_mode = bidirectional_mode
         self.solar = 0.0
         self.soc = 0.0
         self.soc_min = 0.0
         self.soc_max = 100.0
         self.consigne = 0
+        self.consigne_ac = 0
+
 
     def set(self, solar, soc, soc_min, soc_max):
         self.solar = solar
@@ -48,6 +54,14 @@ class Inverter:
     # Méthode permettant de mettre à jour la consigne de l'onduleur
     def update_consigne(self, context: Context):
 
+        _LOGGER.info(
+            "INV %s | soc=%s soc_min=%s empty=%s",
+            self.name,
+            self.soc,
+            self.soc_min,
+            self.is_empty(),
+        )
+
         consigne_brut = 0
         if context.mode == MODE_RECHARGE:
             consigne_brut =  self.consigne_mode_recharge()
@@ -63,6 +77,7 @@ class Inverter:
         # ####################################################################
         # En mode RECHARGE, Tout le solaire va dans la batterie
         ######################################################################
+        _LOGGER.info("INV %s | RECHARGE",self.name,)
         return 0
 
     def consigne_mode_eco(self, context: Context)->float:
@@ -72,6 +87,7 @@ class Inverter:
         # Si la batterie est pleine, renvoyer tout le solaire dans la maison
         # Si la voiture électrique charge, le solaire est utilisé
         ######################################################################
+        _LOGGER.info("INV %s | ECO",self.name,)
         if self.is_full():
             return max(self.solar - OFFSET_ECO, 0)
 
@@ -98,6 +114,7 @@ class Inverter:
         # Le solaire permet de compenser la charge total de la consommation
         # La batterie ne compense pas la charge de la voiture électrique
         ######################################################################
+        _LOGGER.info("INV %s | NORMAL",self.name,)
 
         # le total solaire est supérieur à la charge de la maison (voiture comprise)
         if context.solar_total >= context.power_consumption_total and context.solar_total > 0:

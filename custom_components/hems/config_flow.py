@@ -1,6 +1,7 @@
 import voluptuous as vol
 from homeassistant import config_entries
 from homeassistant.helpers import selector
+from .options_flow import HEMSOptionsFlow
 
 DOMAIN = "hems"
 
@@ -10,6 +11,10 @@ class HEMSConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
 
     def __init__(self):
         self._data = {}
+
+    @staticmethod
+    def async_get_options_flow(config_entry):
+        return HEMSOptionsFlow(config_entry)
 
     # -------------------------------------------------
     # Étape 1 : configuration globale
@@ -45,18 +50,11 @@ class HEMSConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         schema = vol.Schema({
             vol.Required("name"): str,
             vol.Required("max_power"): int,
-            vol.Required("solar_sensor"): selector.EntitySelector(
-                selector.EntitySelectorConfig(domain="sensor")
-            ),
-            vol.Required("soc_sensor"): selector.EntitySelector(
-                selector.EntitySelectorConfig(domain="sensor")
-            ),
-            vol.Required("soc_min_sensor"): selector.EntitySelector(
-                selector.EntitySelectorConfig(domain="number")
-            ),
-            vol.Required("soc_max_sensor"): selector.EntitySelector(
-                selector.EntitySelectorConfig(domain="number")
-            ),
+            vol.Optional("bidirectional_mode",default=False): bool,
+            vol.Required("solar_sensor"): selector.EntitySelector(selector.EntitySelectorConfig(domain="sensor")),
+            vol.Required("soc_sensor"): selector.EntitySelector(selector.EntitySelectorConfig(domain="sensor")),
+            vol.Required("soc_min_sensor"): selector.EntitySelector(selector.EntitySelectorConfig(domain="number")),
+            vol.Required("soc_max_sensor"): selector.EntitySelector(selector.EntitySelectorConfig(domain="number")),
         })
 
         return self.async_show_form(

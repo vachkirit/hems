@@ -3,7 +3,7 @@
     "step": {
       "user": {
         "title": "HEMS configuration",
-        "description": "Configure Home Energy Management System"
+        "description": "Configure HEMS"
       }
     }
   }

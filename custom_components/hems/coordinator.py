@@ -22,6 +22,8 @@ class HEMSCoordinator:
     # Lifecycle
     # -----------------------------------------------------
     async def async_start(self):
+        _LOGGER.info("HEMSCoordinator | start (EVENT_STATE_CHANGED)")
+
         # Écoute globale CORRECTE
         self._unsub = self.hass.bus.async_listen(
             EVENT_STATE_CHANGED,
@@ -31,6 +33,11 @@ class HEMSCoordinator:
         # Initialisation immédiate
         for entity_id in self.entity_mapping:
             state = self.hass.states.get(entity_id)
+            _LOGGER.info(
+                "HEMS | INIT | %s -> %r",
+                entity_id,
+                state.state if state else None,
+            )
             if state:
                 self._apply_state(entity_id, state.state)
 
@@ -57,6 +64,12 @@ class HEMSCoordinator:
         if not new_state:
             return
 
+        _LOGGER.info(
+            "HEMS | EVENT | %s -> %r",
+            entity_id,
+            new_state.state,
+        )
+
         self._apply_state(entity_id, new_state.state)
         self.engine.update()
         self._notify_sensors()
@@ -75,6 +88,12 @@ class HEMSCoordinator:
                 value = float(state)
             except (ValueError, TypeError):
                 return
+
+        _LOGGER.info(
+            "HEMS | APPLY | %s = %r",
+            entity_id,
+            value,
+        )
 
         self.entity_mapping[entity_id](value)
 
